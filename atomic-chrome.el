@@ -386,6 +386,37 @@ Fails silently if a server is already running."
     (delete-process "atomic-chrome-httpd"))
   (global-atomic-chrome-edit-mode 0))
 
+
+(defcustom atomic-chrome-save-history nil
+  "If t save the contents of atomic chrome buffer on exit to `atomic-chrome-history-dir'."
+  :type 'boolean
+  :group 'atomic-chrome)
+
+(defcustom atomic-chrome-history-dir "atomic-chrome"
+  "Directory where to save atomic chrome buffer contents.
+
+The `buffer-file-name' (usually website title)
+will become part of the backup file names, escaped using the rules in
+`auto-save-file-name-transforms'.
+The name of the files are based on combination
+"
+  :type 'boolean
+  :group 'atomic-chrome)
+
+(defun my-atomic-chrome-save-to-file ()
+  "Save atomic chrome buffer contents to file."
+  (when atomic-chrome-save-history
+	(let* ((timestamp (format-time-string "%F_%T"))
+		   (escaped-buffer-name (file-name-base (make-auto-save-file-name)))
+		   (atomic-chrome-save-file-name
+			(file-name-concat atomic-chrome-history-dir
+							  (format "%s_%s" escaped-buffer-name timestamp))))
+	  (make-directory atomic-chrome-history-dir 'parents)
+	  (write-region nil nil atomic-chrome-save-file-name nil nil nil 'mustbenew)
+	  (message "Wrote backup to %s" atomic-chrome-save-file-name))))
+
+(add-hook 'atomic-chrome-edit-done-hook #'my-atomic-chrome-save-to-file)
+
 (provide 'atomic-chrome)
 
 ;;; atomic-chrome.el ends here
