@@ -386,6 +386,23 @@ Fails silently if a server is already running."
     (delete-process "atomic-chrome-httpd"))
   (global-atomic-chrome-edit-mode 0))
 
+
+(defvar atomic-chrome-buffer-history nil
+  "History plist of the contents of sent atomic chrome buffers.")
+
+(with-eval-after-load 'desktop
+  (add-to-list 'desktop-locals-to-save 'atomic-chrome-buffer-history))
+
+(defun atomic-chrome-add-to-history ()
+  (cl-pushnew
+   `(:text ,(buffer-substring-no-properties (point-min) (point-max))
+		   :title ,(buffer-name) :time ,(current-time))
+   atomic-chrome-buffer-history))
+
+(add-hook 'atomic-chrome-edit-done-hook #'atomic-chrome-add-to-history)
+
+;; TODO create tabulated list viewe
+
 (provide 'atomic-chrome)
 
 ;;; atomic-chrome.el ends here
