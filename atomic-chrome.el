@@ -390,10 +390,9 @@ Fails silently if a server is already running."
 (defvar atomic-chrome-buffer-history nil
   "History plist of the contents of sent atomic chrome buffers.")
 
-(with-eval-after-load 'desktop
-  (add-to-list 'desktop-locals-to-save 'atomic-chrome-buffer-history))
 
 (defun atomic-chrome-add-to-history ()
+  (interactive)
   (cl-pushnew
    `(:text ,(buffer-substring-no-properties (point-min) (point-max))
 		   :title ,(buffer-name) :time ,(current-time))
@@ -401,7 +400,17 @@ Fails silently if a server is already running."
 
 (add-hook 'atomic-chrome-edit-done-hook #'atomic-chrome-add-to-history)
 
-;; TODO create tabulated list viewe
+(with-eval-after-load 'desktop
+  (add-to-list 'desktop-globals-to-save 'atomic-chrome-buffer-history))
+
+;; TODO add support of viewing history interactively in own major mode
+(define-derived-mode atomic-chrome-history-view-mode
+  tabulated-list-mode "Atomic Chrome History"
+  "Major mode for viewing the atomic-chrome-history"
+  (setq-local tabulated-list-format
+			  [("Title" 50 t)
+			   ("Time" 30 t)
+			   ("Buffer contents" nil nil)]))
 
 (provide 'atomic-chrome)
 
